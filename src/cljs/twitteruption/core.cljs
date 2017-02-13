@@ -4,8 +4,10 @@
             [secretary.core :as secretary]
             [goog.events :as events]
             [goog.history.EventType :as HistoryEventType]
-            [markdown.core :refer [md->html]]
             [ajax.core :refer [GET POST]]
+            [twitteruption.storm
+             :refer [component]
+             :rename {component storm-component}]
             [twitteruption.ajax :refer [load-interceptors!]]
             [twitteruption.handlers]
             [twitteruption.subscriptions])
@@ -37,15 +39,8 @@
     [:div.col-md-12
      [:img {:src (str js/context "/img/warning_clojure.png")}]]]])
 
-(defn home-page []
-  [:div.container
-   (when-let [docs @(rf/subscribe [:docs])]
-     [:div.row>div.col-sm-12
-      [:div {:dangerouslySetInnerHTML
-             {:__html (md->html docs)}}]])])
-
 (def pages
-  {:home #'home-page
+  {:home #'storm-component
    :about #'about-page})
 
 (defn page []
@@ -76,8 +71,6 @@
 
 ;; -------------------------
 ;; Initialize app
-(defn fetch-docs! []
-  (GET "/docs" {:handler #(rf/dispatch [:set-docs %])}))
 
 (defn mount-components []
   (rf/clear-subscription-cache!)
@@ -86,6 +79,6 @@
 (defn init! []
   (rf/dispatch-sync [:initialize-db])
   (load-interceptors!)
-  (fetch-docs!)
+  (rf/dispatch [:whoami])
   (hook-browser-navigation!)
   (mount-components))

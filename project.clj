@@ -29,7 +29,15 @@
                  [ring/ring-core "1.5.1"]
                  [ring/ring-defaults "0.2.3"]
                  [secretary "1.2.3"]
-                 [selmer "1.10.6"]]
+                 [selmer "1.10.6"]
+                 [environ "1.1.0"]
+                 [clj-oauth "1.5.5"]
+                 [camel-snake-kebab "0.4.0"]
+                 [aleph "0.4.2-alpha6"]
+                 [byte-streams "0.2.2"]
+                 [ring/ring-json "0.4.0"]
+                 [cheshire "5.7.0"]
+                 [com.cognitect/transit-cljs "0.8.239"]]
 
   :min-lein-version "2.0.0"
 
@@ -97,7 +105,12 @@
                       :output-dir "target/cljsbuild/public/js/out"
                       :source-map true
                       :optimizations :none
-                      :pretty-print true}}}}
+                      :pretty-print true}}
+                    :test
+                    {:source-paths ["src/cljc" "src/cljs" "test/cljs"]
+                     :compiler
+                     {:output-to "target/test.js"
+                      :main "twitteruption.doo-runner"}}}}
                   
                   
                   
