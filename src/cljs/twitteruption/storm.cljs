@@ -95,22 +95,22 @@
                     :rows 6
                     :on-change #(rf/dispatch [:set-ts-content (tv %)])}]]]
       [:div.row
-       [:div.col-xs-12
-        (str formatted-length " characters")]]
-      (if (nil? editing)
-        [:div
-         [:button
-          {:disabled (or (<= (count content) 0) (> formatted-length 140))
-           :on-click #(rf/dispatch [:add-ts-tweet content])}
-          "Add"]]
-        [:div
-         [:button
-          {:disabled (or (<= (count content) 0) (> formatted-length 140))
-           :on-click #(rf/dispatch [:ts-save-tweet editing content])}
-          "Save"]
-         [:button
-          {:on-click #(rf/dispatch [:ts-stop-editing])}
-          "Cancel"]])]]))
+       [:div.col-xs-4
+        (str formatted-length " characters")]
+       (if (nil? editing)
+         [:div.col-xs-8.end-xs
+          [:button
+           {:disabled (or (<= (count content) 0) (> formatted-length 140))
+            :on-click #(rf/dispatch [:add-ts-tweet content])}
+           "Add"]]
+         [:div.col-xs-8.end-xs
+          [:button
+           {:on-click #(rf/dispatch [:ts-stop-editing])}
+           "Cancel"]
+          [:button
+           {:disabled (or (<= (count content) 0) (> formatted-length 140))
+            :on-click #(rf/dispatch [:ts-save-tweet editing content])}
+           "Save"]])]]]))
 
 (defn tweet-list
   []
