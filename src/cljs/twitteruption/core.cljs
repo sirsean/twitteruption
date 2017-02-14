@@ -45,7 +45,6 @@
 
 (defn page []
   [:div
-   [navbar]
    [(pages @(rf/subscribe [:page]))]])
 
 ;; -------------------------

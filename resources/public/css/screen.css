@@ -67,3 +67,7 @@ body {
     }
 }
 
+
+.editor textarea {
+    width: 100%;
+}

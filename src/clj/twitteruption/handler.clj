@@ -32,7 +32,6 @@
         (error-page {:status 404
                      :title "page not found"})))))
 
-
 (defn app []
   (-> #'app-routes
       (session/wrap-session {:store (cookie-store {:key (env :cookie-store-key)})})

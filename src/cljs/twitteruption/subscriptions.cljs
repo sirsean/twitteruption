@@ -33,6 +33,13 @@
     (-> db :storm :tweets)))
 
 (reg-sub
+  :num-tweets
+  (fn [_ _]
+    (subscribe [:tweets]))
+  (fn [tweets _]
+    (count tweets)))
+
+(reg-sub
   :last-tweetstorm-href
   (fn [db _]
     (-> db :storm :last-tweetstorm-href)))
@@ -47,3 +54,10 @@
       (fn [i content]
         (t/format-tweet fmt content (inc i) (count tweets)))
       tweets)))
+
+(reg-sub
+  :longest-tweet
+  (fn [_ _]
+    (subscribe [:formatted-tweets]))
+  (fn [tweets _]
+    (apply max (map count tweets))))
