@@ -11,39 +11,6 @@
   [num-tweets]
   (str "Tweet " num-tweets " time" (when (not (= 1 num-tweets)) "s")))
 
-(defn show-tweet
-  [i tweet num-tweets]
-  (let [length (count tweet)]
-    ^{:key i}
-    [:div.row
-     [:div.col-xs-10
-      [:div.row
-       [:div.col-xs-12
-        [:span tweet]]]
-      [:div.row
-       [:div.col-xs-6
-        (str length " characters")]
-       [:div.col-xs-6.end-xs
-        [:button
-         {:on-click #(rf/dispatch [:ts-edit-tweet i])}
-         "Edit"]
-        [:button
-         {:on-click #(rf/dispatch [:ts-delete-tweet i])}
-         "Delete"]]]]
-     [:div.col-xs-2
-      [:div.row
-       [:div.col-xs-12
-        [:button
-         {:disabled (<= i 0)
-          :on-click #(rf/dispatch [:ts-move-tweet i (dec i)])}
-         "Up"]]]
-      [:div.row
-       [:div.col-xs-12
-        [:button
-         {:disabled (>= i (dec num-tweets))
-          :on-click #(rf/dispatch [:ts-move-tweet i (inc i)])}
-         "Down"]]]]]))
-
 (defn logout
   [e]
   (.preventDefault e)
@@ -52,27 +19,36 @@
 (defn header
   []
   (let [whoami @(rf/subscribe [:whoami])]
-    [:div.row.middle-xs
-     [:div.col-xs-8
-      [:h1 "twitteruption"]]
-     (if whoami
+    [:div.header.row.middle-xs
+     [:div.col-xs-3.col-md-1
+      [:img.logo {:src "/img/logo.png"}]]
+     [:div.col-xs-5.col-md-7
+      [:div.title "twitteruption"]]
+     (when whoami
        [:div.col-xs-4.end-xs
         [:p
          (:username whoami)]
         [:p
-         [:a {:href "#"
-              :on-click logout}
-          "Logout"]]]
-       [:div.col-xs-4.end-xs
-        [:a {:href "/oauth/start"}
-         "Authenticate"]])]))
+         [:a.action
+          {:href "#"
+           :on-click logout}
+          "Logout"]]])]))
+
+(defn character-count
+  [length]
+  (let [clz (if (> length 140)
+              "character-count invalid"
+              "character-count")]
+    [:div {:class clz}
+     (str length " characters")]))
 
 (defn formatter
   []
   (let [fmt @(rf/subscribe [:format])]
-    [:div.row
-     [:div.col-xs-12
-      [:span "Format"]
+    [:div.formatter.row.middle-xs
+     [:div.col-xs-2.end-xs
+      [:span "Format"]]
+     [:div.col-xs-10.col-md-8
       [:input {:type "text"
                :value fmt
                :on-change #(rf/dispatch [:set-ts-format (tv %)])}]]]))
@@ -90,59 +66,139 @@
     [:div.row.editor
      [:div.col-xs-12
       [:div.row
-       [:div.col-xs-12
-        [:textarea {:value content
+       [:div.col-xs-12.center-xs
+        [:textarea {:id "editor-textarea"
+                    :value content
                     :rows 6
+                    :on-key-press (fn [e]
+                                    (let [shift? (.-shiftKey e)
+                                          enter? (= 13 (.-which e))]
+                                      (when (and shift? enter?)
+                                        (.preventDefault e)
+                                        (rf/dispatch [:add-ts-tweet content]))))
                     :on-change #(rf/dispatch [:set-ts-content (tv %)])}]]]
-      [:div.row
+      [:div.row.middle-xs
        [:div.col-xs-4
-        (str formatted-length " characters")]
+        (when (pos? (count content))
+          (character-count formatted-length))]
        (if (nil? editing)
          [:div.col-xs-8.end-xs
-          [:button
+          [:button.big
            {:disabled (or (<= (count content) 0) (> formatted-length 140))
-            :on-click #(rf/dispatch [:add-ts-tweet content])}
+            :on-click (fn []
+                        (.. js/document
+                            (getElementById "editor-textarea")
+                            (focus))
+                        (rf/dispatch [:add-ts-tweet content]))}
            "Add"]]
          [:div.col-xs-8.end-xs
-          [:button
-           {:on-click #(rf/dispatch [:ts-stop-editing])}
+          [:a.action
+           {:href "#"
+            :on-click (fn [e]
+                        (.preventDefault e)
+                        (rf/dispatch [:ts-stop-editing]))}
            "Cancel"]
-          [:button
+          [:button.big
            {:disabled (or (<= (count content) 0) (> formatted-length 140))
             :on-click #(rf/dispatch [:ts-save-tweet editing content])}
            "Save"]])]]]))
+
+(defn show-tweet
+  [i tweet num-tweets]
+  (let [length (count tweet)]
+    ^{:key i}
+    [:div.tweet.row.middle-xs
+     [:div.col-xs-10
+      [:div.content.row
+       [:div.col-xs-12
+        [:span tweet]]]
+      [:div.info.row.bottom-xs
+       [:div.col-xs-6
+        (character-count length)]
+       [:div.col-xs-6.end-xs
+        [:a.action
+         {:href "#"
+          :on-click (fn [e]
+                      (.preventDefault e)
+                      (rf/dispatch [:ts-edit-tweet i]))}
+         "Edit"]
+        [:a.action
+         {:href "#"
+          :on-click (fn [e]
+                      (.preventDefault e)
+                      (rf/dispatch [:ts-delete-tweet i]))}
+         "Delete"]]]]
+     [:div.col-xs-2
+      [:div.row
+       [:div.col-xs-12
+        [:button.small
+         {:disabled (<= i 0)
+          :on-click #(rf/dispatch [:ts-move-tweet i (dec i)])}
+         [:i.fa.fa-arrow-up]]]]
+      [:div.row
+       [:div.col-xs-12
+        [:button.small
+         {:disabled (>= i (dec num-tweets))
+          :on-click #(rf/dispatch [:ts-move-tweet i (inc i)])}
+         [:i.fa.fa-arrow-down]]]]]]))
 
 (defn tweet-list
   []
   (let [tweets @(rf/subscribe [:formatted-tweets])
         last-tweetstorm-href @(rf/subscribe [:last-tweetstorm-href])
         num-tweets @(rf/subscribe [:num-tweets])
-        longest-tweet @(rf/subscribe [:longest-tweet])]
+        longest-tweet @(rf/subscribe [:longest-tweet])
+        sending? @(rf/subscribe [:sending?])
+        send-disabled? (or (<= num-tweets 0)
+                           (> longest-tweet 140)
+                           sending?)]
     [:div.row.tweet-list
      [:div.col-xs-12
       (when last-tweetstorm-href
-        [:p
-         [:a {:href last-tweetstorm-href
-              :target "_blank"}
-          "Go see it on Twitter"]])
-      [:div.row
-       [:div.col-xs-12
-        (map-indexed #(show-tweet %1 %2 num-tweets) tweets)]]
-      (let [send-text (send-button-text num-tweets)]
         [:div.row
          [:div.col-xs-12.center-xs
-          [:button
-           {:disabled (or (<= num-tweets 0) (> longest-tweet 140))
-            :on-click #(rf/dispatch [:ts-send-tweets tweets])}
-           send-text]]])]]))
+          [:a {:href last-tweetstorm-href
+               :target "_blank"}
+           "Go see it on Twitter"]]])
+      (when (seq tweets)
+        [:div.row
+         [:div.col-xs-12
+          [:div.row
+           [:div.col-xs-12
+            (map-indexed #(show-tweet %1 %2 num-tweets) tweets)]]
+          (let [send-text (send-button-text num-tweets)]
+            [:div.row
+             [:div.col-xs-12.center-xs
+              [:button.big
+               {:disabled send-disabled?
+                :on-click #(rf/dispatch [:ts-send-tweets tweets])}
+               send-text]]])]])]]))
+
+(defn unauthenticated
+  []
+  [:div.row
+   [:div.col-xs-10.col-xs-offset-1.center-xs
+    [:p "This is twitteruption."]
+    [:p "It will let you construct a tweetstorm and send it out all at once. And they'll be threaded, just as they're supposed to be!"]
+    [:p "Like an eruption of tweets, as it were."]
+    [:p "But in order to use it, you have to log in via Twitter."]]
+   [:div.col-xs-12.center-xs
+    [:p [:a.action
+         {:href "/oauth/start"}
+         "Authenticate"]]]])
 
 (defn component
   []
-  [:div.container
-   (header)
-   (formatter)
-   [:div.row
-    [:div.col-xs-12.col-lg-6
-     (editor)]
-    [:div.col-xs-12.col-lg-6
-     (tweet-list)]]])
+  (let [whoami @(rf/subscribe [:whoami])]
+    [:div.container
+     (header)
+     (if-not whoami
+       (unauthenticated)
+       [:div.row
+        [:div.col-xs-12
+         (formatter)
+         [:div.row
+          [:div.col-xs-12.col-md-6
+           (editor)]
+          [:div.col-xs-12.col-md-6
+           (tweet-list)]]]])]))

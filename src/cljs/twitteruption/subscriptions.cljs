@@ -61,3 +61,8 @@
     (subscribe [:formatted-tweets]))
   (fn [tweets _]
     (apply max (map count tweets))))
+
+(reg-sub
+  :sending?
+  (fn [db _]
+    (-> db :storm :sending?)))

@@ -2,6 +2,7 @@ html,
 body {
 	font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
     height: 100%;
+    margin-top: 0;
 }
 .navbar {
   margin-bottom: 10px;
@@ -67,7 +68,86 @@ body {
     }
 }
 
+button {
+    background-color: #E8F5FD;
+    border: 2px solid #1DA1F2;
+    border-radius: 4px;
+    font-size: 14pt;
+}
+
+button.big {
+    padding: 10px;
+}
+
+button.small {
+    padding: 6px;
+}
+
+a.action {
+    margin: 3px;
+    color: #1DA1F2;
+}
+
+a.action:hover {
+    text-decoration: none;
+}
+
+.header {
+    background-color: #E8F5FD;
+}
+
+.header img.logo {
+    height: 64px;
+    margin: 10px;
+}
+
+.header .title {
+    font-size: 20pt;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.character-count {
+    display: inline-block;
+    font-size: 10pt;
+    color: #666666;
+}
+
+.character-count.invalid {
+    color: red;
+}
+
+.formatter {
+    margin: 8px;
+    padding: 12px;
+}
+
+.formatter input {
+    margin: 6px;
+    padding: 12px;
+    font-size: 14pt;
+    width: 97%;
+    border: 2px solid #1DA1F2;
+    border-radius: 4px;
+}
 
 .editor textarea {
-    width: 100%;
+    padding: 12px;
+    font-size: 12pt;
+    width: 93%;
+    border: 2px solid #1DA1F2;
+    border-radius: 4px;
+}
+
+.tweet {
+    margin: 8px 0;
+}
+
+.tweet .content {
+    padding: 6px;
+}
+
+.tweet .info {
+    background-color: #E8F5FD;
+    padding: 8px;
 }

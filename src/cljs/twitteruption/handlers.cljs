@@ -36,6 +36,8 @@
           conj
           content)
         (assoc-in
+          [:storm :last-tweetstorm-href] nil)
+        (assoc-in
           [:storm :content] ""))))
 
 (reg-event-db
@@ -95,20 +97,21 @@
 
 (reg-event-fx
   :ts-send-tweets
-  (fn [_ [_ tweets]]
+  (fn [{db :db} [_ tweets]]
     (POST "/api/erupt"
           {:body (write-json (vec tweets))
            :headers {:content-type "application/json"}
            :format :json
            :response-format :json
            :handler #(dispatch [:ts-sent-tweets (transform-keys ->kebab-case-keyword %1)])})
-    {}))
+    {:db (assoc-in db [:storm :sending?] true)}))
 
 (reg-event-db
   :ts-sent-tweets
   (fn [db [_ {href :href}]]
     (-> db
       (assoc-in [:storm :tweets] [])
+      (assoc-in [:storm :sending?] false)
       (assoc-in [:storm :last-tweetstorm-href] href))))
 
 (reg-event-fx
