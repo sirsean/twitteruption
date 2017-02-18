@@ -69,8 +69,8 @@ body {
 }
 
 button {
-    background-color: #E8F5FD;
-    border: 2px solid #1DA1F2;
+    background-color: #fec6c6;
+    border: 2px solid #fc1f1f;
     border-radius: 4px;
     font-size: 14pt;
 }
@@ -85,7 +85,7 @@ button.small {
 
 a.action {
     margin: 3px;
-    color: #1DA1F2;
+    color: #fc1f1f;
 }
 
 a.action:hover {
@@ -93,7 +93,7 @@ a.action:hover {
 }
 
 .header {
-    background-color: #E8F5FD;
+    background-color: #fec6c6;
 }
 
 .header img.logo {
@@ -127,16 +127,18 @@ a.action:hover {
     padding: 12px;
     font-size: 14pt;
     width: 97%;
-    border: 2px solid #1DA1F2;
+    border: 2px solid #fc1f1f;
     border-radius: 4px;
+    outline: none;
 }
 
 .editor textarea {
     padding: 12px;
     font-size: 12pt;
     width: 93%;
-    border: 2px solid #1DA1F2;
+    border: 2px solid #fc1f1f;
     border-radius: 4px;
+    outline: none;
 }
 
 .tweet {
@@ -148,6 +150,6 @@ a.action:hover {
 }
 
 .tweet .info {
-    background-color: #E8F5FD;
+    background-color: #fec6c6;
     padding: 8px;
 }
