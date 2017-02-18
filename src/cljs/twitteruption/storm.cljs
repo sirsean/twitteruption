@@ -160,6 +160,11 @@
           [:a {:href last-tweetstorm-href
                :target "_blank"}
            "Go see it on Twitter"]]])
+      (when (and (not (seq tweets))
+                 (not last-tweetstorm-href))
+        [:div.row
+         [:div.col-xs-12.center-xs
+          [:em "Your tweets will appear here before they are sent."]]])
       (when (seq tweets)
         [:div.row
          [:div.col-xs-12
