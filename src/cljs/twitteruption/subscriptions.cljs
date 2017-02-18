@@ -13,6 +13,11 @@
     (-> db :storm :whoami)))
 
 (reg-sub
+  :whoami-fetched?
+  (fn [db _]
+    (-> db :storm :whoami-fetched?)))
+
+(reg-sub
   :format
   (fn [db _]
     (-> db :storm :format)))

@@ -192,18 +192,26 @@
          {:href "/oauth/start"}
          "Authenticate"]]]])
 
+(defn loading-auth
+  []
+  [:div.row
+   [:div.col-xs-12.center-xs
+    [:p "Loading..."]]])
+
 (defn component
   []
-  (let [whoami @(rf/subscribe [:whoami])]
+  (let [fetched? @(rf/subscribe [:whoami-fetched?])
+        whoami @(rf/subscribe [:whoami])]
     [:div.container
      (header)
-     (if-not whoami
-       (unauthenticated)
-       [:div.row
-        [:div.col-xs-12
-         (formatter)
-         [:div.row
-          [:div.col-xs-12.col-md-6
-           (editor)]
-          [:div.col-xs-12.col-md-6
-           (tweet-list)]]]])]))
+     (cond
+       (not fetched?) (loading-auth)
+       (not whoami) (unauthenticated)
+       :else [:div.row
+              [:div.col-xs-12
+               (formatter)
+               [:div.row
+                [:div.col-xs-12.col-md-6
+                 (editor)]
+                [:div.col-xs-12.col-md-6
+                 (tweet-list)]]]])]))

@@ -83,17 +83,19 @@
 
 (reg-event-fx
   :whoami
-  (fn [_ _]
+  (fn [{db :db} _]
     (GET "/api/whoami"
          {:response-format :json
           :handler #(dispatch [:got-whoami (transform-keys ->kebab-case-keyword %1)])
           :error-handler #(dispatch [:got-whoami nil])})
-    {}))
+    {:db (assoc-in db [:storm :whoami-fetched?] false)}))
 
 (reg-event-db
   :got-whoami
   (fn [db [_ whoami]]
-    (assoc-in db [:storm :whoami] whoami)))
+    (-> db
+        (assoc-in [:storm :whoami-fetched?] true)
+        (assoc-in [:storm :whoami] whoami))))
 
 (reg-event-fx
   :ts-send-tweets
