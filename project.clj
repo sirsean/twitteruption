@@ -37,6 +37,7 @@
                  [byte-streams "0.2.2"]
                  [ring/ring-json "0.4.0"]
                  [cheshire "5.7.0"]
+                 [manifold "0.1.6"]
                  [com.cognitect/transit-cljs "0.8.239"]]
 
   :min-lein-version "2.0.0"
