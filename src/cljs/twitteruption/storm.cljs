@@ -18,16 +18,16 @@
 
 (defn header
   []
-  (let [whoami @(rf/subscribe [:whoami])]
+  (let [username @(rf/subscribe [:current-username])]
     [:div.header.row.middle-xs
      [:div.col-xs-3.col-md-1
       [:img.logo {:src "/img/logo.png"}]]
      [:div.col-xs-5.col-md-7
       [:div.title "twitteruption"]]
-     (when whoami
+     (when username
        [:div.col-xs-4.end-xs
         [:p
-         (:username whoami)]
+         username]
         [:p
          [:a.action
           {:href "#"
@@ -59,10 +59,12 @@
         content @(rf/subscribe [:content])
         editing @(rf/subscribe [:editing])
         num-tweets @(rf/subscribe [:num-tweets])
-        formatted-content (if (nil? editing)
-                            (t/format-tweet fmt content (inc num-tweets) (inc num-tweets))
-                            (t/format-tweet fmt content (inc editing) num-tweets))
-        formatted-length (count formatted-content)]
+        url-length @(rf/subscribe [:short-url-length])
+        formatted-length (-> (if (nil? editing)
+                               (t/format-tweet fmt content (inc num-tweets) (inc num-tweets))
+                               (t/format-tweet fmt content (inc editing) num-tweets))
+                             (t/url-length-placeholder url-length)
+                             count)]
     [:div.row.editor
      [:div.col-xs-12
       [:div.row
@@ -104,8 +106,8 @@
            "Save"]])]]]))
 
 (defn show-tweet
-  [i tweet num-tweets]
-  (let [length (count tweet)]
+  [i tweet num-tweets url-length]
+  (let [length (count (t/url-length-placeholder tweet url-length))]
     ^{:key i}
     [:div.tweet.row.middle-xs
      [:div.col-xs-10
@@ -148,6 +150,7 @@
         last-tweetstorm-href @(rf/subscribe [:last-tweetstorm-href])
         num-tweets @(rf/subscribe [:num-tweets])
         longest-tweet @(rf/subscribe [:longest-tweet])
+        url-length @(rf/subscribe [:short-url-length])
         sending? @(rf/subscribe [:sending?])
         send-disabled? (or (<= num-tweets 0)
                            (> longest-tweet 140)
@@ -170,7 +173,7 @@
          [:div.col-xs-12
           [:div.row
            [:div.col-xs-12
-            (map-indexed #(show-tweet %1 %2 num-tweets) tweets)]]
+            (map-indexed #(show-tweet %1 %2 num-tweets url-length) tweets)]]
           (let [send-text (send-button-text num-tweets)]
             [:div.row
              [:div.col-xs-12.center-xs

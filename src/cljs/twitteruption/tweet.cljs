@@ -8,6 +8,24 @@
       (s/replace #"\{index\}" (str index))
       (s/replace #"\{total\}" (str total))))
 
+(def url-pattern #"(https?://[^\s]+)")
+
+(defn url-length-placeholder
+  "Replace all URLs in the given string with the number of dots specified
+  by the url-length parameter."
+  [content url-length]
+  (let [replacement (->> (fn [] ".")
+                         repeatedly
+                         (take url-length)
+                         s/join)]
+    (loop [urls (re-seq url-pattern content)
+           content content]
+      (if (empty? urls)
+        content
+        (let [[url _] (first urls)]
+          (recur (rest urls)
+                 (s/replace content url replacement)))))))
+
 (defn replace-index
   [coll index value]
   (cond

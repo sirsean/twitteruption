@@ -11,6 +11,15 @@
        "{text}" "entry" 1 10 "entry"
        "{text} ({index}/{total})" "entry" 1 10 "entry (1/10)"))
 
+(deftest test-url-length-placeholder
+  (are [length in out]
+       (= out (t/url-length-placeholder in length))
+
+       5 "" ""
+       5 "no url" "no url"
+       5 "http://google.com" "....."
+       3 "this has http://google.com and http://facebook.com" "this has ... and ..."))
+
 (deftest test-replace-index
   (are [coll index value expected]
        (= expected (t/replace-index coll index value))

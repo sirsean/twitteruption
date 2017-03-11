@@ -13,6 +13,20 @@
     (-> db :storm :whoami)))
 
 (reg-sub
+  :current-username
+  (fn [_ _]
+    (subscribe [:whoami]))
+  (fn [whoami _]
+    (-> whoami :username)))
+
+(reg-sub
+  :short-url-length
+  (fn [_ _]
+    (subscribe [:whoami]))
+  (fn [whoami _]
+    (-> whoami :configs :short-url-length-https)))
+
+(reg-sub
   :whoami-fetched?
   (fn [db _]
     (-> db :storm :whoami-fetched?)))
@@ -63,9 +77,12 @@
 (reg-sub
   :longest-tweet
   (fn [_ _]
-    (subscribe [:formatted-tweets]))
-  (fn [tweets _]
-    (apply max (map count tweets))))
+    [(subscribe [:short-url-length])
+     (subscribe [:formatted-tweets])])
+  (fn [[url-length tweets] _]
+    (apply max (->> tweets
+                    (map #(t/url-length-placeholder % url-length))
+                    (map count)))))
 
 (reg-sub
   :sending?

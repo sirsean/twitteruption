@@ -9,10 +9,35 @@
             [twitteruption.routes.auth :refer [consumer]]
             [oauth.client :as oauth]))
 
+(defn load-configuration
+  [access-token]
+  (let [creds (oauth/credentials
+                consumer
+                (:oauth_token access-token)
+                (:oauth_token_secret access-token)
+                :GET
+                "https://api.twitter.com/1.1/help/configuration.json")]
+    (->
+      (md/chain
+        (http/get
+          "https://api.twitter.com/1.1/help/configuration.json"
+          {:query-params creds})
+        :body
+        bs/to-reader
+        #(json/parse-stream % ->kebab-case-keyword))
+      (md/catch
+        (fn [e]
+          (println (-> (.getData e)
+                       :body
+                       bs/to-string))
+          (println "Couldn't get configuration" (.getMessage e)))))))
+
 (defn whoami
   [session]
   (if-let [username (-> session :access-token :screen_name)]
-    (response/ok {:username username})
+    (let [configs @(load-configuration (:access-token session))]
+      (response/ok {:username username
+                    :configs configs}))
     (response/not-found)))
 
 (defn send-tweet
