@@ -6,10 +6,15 @@
             [manifold.deferred :as md]
             [cheshire.core :as json]
             [camel-snake-kebab.core :refer [->kebab-case-keyword]]
+            [clojure.core.cache :as cache]
             [twitteruption.routes.auth :refer [consumer]]
             [oauth.client :as oauth]))
 
-(defn load-configuration
+(def config-cache (atom (cache/ttl-cache-factory
+                          {}
+                          :ttl (* 60 60 1000)))) ; 1-hour caching
+
+(defn fetch-configuration
   [access-token]
   (let [creds (oauth/credentials
                 consumer
@@ -24,13 +29,21 @@
           {:query-params creds})
         :body
         bs/to-reader
-        #(json/parse-stream % ->kebab-case-keyword))
-      (md/catch
-        (fn [e]
-          (println (-> (.getData e)
-                       :body
-                       bs/to-string))
-          (println "Couldn't get configuration" (.getMessage e)))))))
+        #(json/parse-stream % ->kebab-case-keyword)))))
+
+(defn load-configuration
+  [access-token]
+  (if (cache/has? @config-cache :config)
+    (md/success-deferred
+      (-> config-cache
+          (swap! cache/hit :config)
+          (get :config)))
+    (md/chain
+      (fetch-configuration access-token)
+      (fn [config]
+        (-> config-cache
+            (swap! cache/miss :config config)
+            (get :config))))))
 
 (defn whoami
   [session]
